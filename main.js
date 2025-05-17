@@ -1,8 +1,5 @@
 const { Actor } = require('apify');
-const puppeteer = require('puppeteer');
-
-// Fuerza a usar el navegador que ya está instalado en Apify
-process.env.PUPPETEER_EXECUTABLE_PATH = '/usr/bin/google-chrome-stable';
+const puppeteer = require('puppeteer-core');
 
 Actor.main(async () => {
     try {
