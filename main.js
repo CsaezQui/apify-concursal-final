@@ -1,11 +1,17 @@
 const { Actor } = require('apify');
+const puppeteer = require('puppeteer');
 
 Actor.main(async () => {
     try {
         const input = await Actor.getInput();
         const { nombreEmpresa, cif } = input;
 
-        const page = await Actor.newPuppeteerPage();
+        const browser = await puppeteer.launch({
+            headless: true,
+            args: ['--no-sandbox']
+        });
+
+        const page = await browser.newPage();
         await page.goto('https://www.publicidadconcursal.es/consulta-publicidad-concursal-new', {
             waitUntil: 'networkidle0',
         });
@@ -32,6 +38,8 @@ Actor.main(async () => {
                 };
             });
         });
+
+        await browser.close();
 
         if (resultados.length === 0) {
             await Actor.setValue('OUTPUT', {
