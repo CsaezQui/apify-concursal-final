@@ -3,11 +3,11 @@ FROM apify/actor-node:20
 # Fuerza la descarga de Chromium
 ENV PUPPETEER_SKIP_DOWNLOAD=false
 
-# Copia todo el proyecto
+# Copia archivos del proyecto
 COPY . ./
 
-# Instala dependencias (incluye Puppeteer)
+# Instala dependencias y fuerza descarga
 RUN npm install --omit=dev
 
-# Comando por defecto
+# Ejecuta el script
 CMD ["node", "main.js"]
