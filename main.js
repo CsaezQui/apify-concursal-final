@@ -1,5 +1,5 @@
 const { Actor } = require('apify');
-const puppeteer = require('puppeteer-core');
+const puppeteer = require('puppeteer');
 
 Actor.main(async () => {
     try {
@@ -8,16 +8,13 @@ Actor.main(async () => {
 
         console.log('Lanzando navegador...');
         const browser = await puppeteer.launch({
-    headless: true,
-    executablePath: '/usr/bin/google-chrome-stable',
-    args: [
-        '--no-sandbox',
-        '--disable-setuid-sandbox',
-        '--disable-web-security',
-        '--disable-features=IsolateOrigins,site-per-process',
-        '--window-size=1200,800'
-    ]
-});
+            headless: true,
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--window-size=1200,800'
+            ]
+        });
 
         const page = await browser.newPage();
         await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
