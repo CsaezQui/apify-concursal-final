@@ -6,25 +6,40 @@ Actor.main(async () => {
         const input = await Actor.getInput();
         const { nombreEmpresa, cif } = input;
 
+        console.log('Lanzando navegador...');
         const browser = await puppeteer.launch({
             headless: true,
-            args: ['--no-sandbox']
+            args: [
+                '--no-sandbox',
+                '--disable-setuid-sandbox',
+                '--disable-web-security',
+                '--disable-features=IsolateOrigins,site-per-process',
+                '--window-size=1200,800'
+            ]
         });
 
         const page = await browser.newPage();
+        await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36');
+
+        console.log('Navegando a la web...');
         await page.goto('https://www.publicidadconcursal.es/consulta-publicidad-concursal-new', {
             waitUntil: 'networkidle0',
         });
 
-        await page.waitForSelector('#busquedaNombre');
+        console.log('Esperando selector...');
+        await page.waitForSelector('#busquedaNombre', { timeout: 10000 });
+
+        console.log('Rellenando formulario...');
         await page.type('#busquedaNombre', nombreEmpresa);
         await page.type('#busquedaNif', cif);
 
+        console.log('Haciendo clic en Buscar...');
         await Promise.all([
             page.click('#btnBuscar'),
-            page.waitForNavigation({ waitUntil: 'networkidle0' })
+            page.waitForNavigation({ waitUntil: 'networkidle0' }),
         ]);
 
+        console.log('Extrayendo resultados...');
         const resultados = await page.$$eval('.tablaResultados tbody tr', filas => {
             return filas.map(fila => {
                 const celdas = fila.querySelectorAll('td');
@@ -41,21 +56,15 @@ Actor.main(async () => {
 
         await browser.close();
 
-        if (resultados.length === 0) {
-            await Actor.setValue('OUTPUT', {
-                encontrado: false,
-                mensaje: 'No hay situación concursal',
-                input
-            });
-        } else {
-            await Actor.setValue('OUTPUT', {
-                encontrado: true,
-                concursos: resultados,
-                input
-            });
-        }
+        console.log('Guardando output...');
+        await Actor.setValue('OUTPUT', {
+            encontrado: resultados.length > 0,
+            concursos: resultados,
+            input
+        });
 
     } catch (error) {
+        console.error('Error detectado:', error);
         await Actor.setValue('OUTPUT', {
             ok: false,
             error: error.message,
